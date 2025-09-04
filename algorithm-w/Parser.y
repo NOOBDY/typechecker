@@ -26,27 +26,26 @@ import qualified Data.ByteString.Lazy.Char8 as BS
     '='     { L.TEquals }
     '->'    { L.TArrow }
 
--- %left ident
-%left '->'
-%left '\\'
-%left '('
-%left ','
-
 %%
 
 name :: { Ast.Name }
     : ident     { (\(L.TIdent name) -> name) $1 }
 
-
 expr :: { Ast.Expr }
-    : int                                   { (\(L.TInt int) -> Ast.ELit (Ast.LInt int)) $1 }
-    | bool                                  { (\(L.TBool bool) -> Ast.ELit (Ast.LBool bool)) $1 }
-    | name                                  { Ast.EVar $1 }
-    | '\\' name '->' expr                   { Ast.EAbs $2 $4 }
-    | expr expr                             { Ast.EApp $1 $2 }
-    | let name '=' expr in expr             { Ast.ELet $2 $4 $6 }
-    | '(' exprs ')'                         { Ast.ETuple $2 }
-    | '(' expr ')'                          { $2 }
+    : let name '=' expr in expr     { Ast.ELet $2 $4 $6 }
+    | '\\' name '->' expr           { Ast.EAbs $2 $4 }
+    | app                           { $1 }
+
+app :: { Ast.Expr }
+    : app atom          { Ast.EApp $1 $2 }
+    | atom              { $1 }
+
+atom :: { Ast.Expr }
+    : int               { (\(L.TInt int) -> Ast.ELit (Ast.LInt int)) $1 }
+    | bool              { (\(L.TBool bool) -> Ast.ELit (Ast.LBool bool)) $1 }
+    | name              { Ast.EVar $1 }
+    | '(' expr ')'      { $2 }
+    | '(' exprs ')'     { Ast.ETuple $2 }
 
 exprs_rev
     : exprs ',' expr    { $3 : $1 }
