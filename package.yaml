@@ -1,0 +1,17 @@
+name: typechecker
+
+executables:
+  algorithm-w:
+    main: Main.hs
+    source-dirs: algorithm-w
+    ghc-options:
+      - -Wall
+      - -Werror
+    dependencies:
+      - array
+      - base
+      - bytestring
+      - containers
+      - mtl
+    build-tools:
+      - alex

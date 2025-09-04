@@ -1,0 +1,31 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           typechecker
+version:        0.0.0
+build-type:     Simple
+
+executable algorithm-w
+  main-is: Main.hs
+  other-modules:
+      Ast
+      Errors
+      Infer
+      Lexer
+      Parser
+      Paths_typechecker
+  hs-source-dirs:
+      algorithm-w
+  ghc-options: -Wall -Werror
+  build-tools:
+      alex
+  build-depends:
+      array
+    , base
+    , bytestring
+    , containers
+    , mtl
+  default-language: Haskell2010

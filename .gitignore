@@ -1,0 +1,21 @@
+# GHC build artefacts
+*.hi
+*.o
+
+# Haskell Tool Stack-related
+.stack-work/
+
+# Cabal-related
+.cabal-sandbox
+cabal.sandbox.config
+
+# macOS related
+.DS_Store
+
+# Vim-related
+*.swp
+
+# keter package-related: https://hackage.haskell.org/package/keter
+*.keter
+
+.direnv
