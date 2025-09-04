@@ -22,6 +22,7 @@ executable algorithm-w
   ghc-options: -Wall -Werror
   build-tools:
       alex
+    , happy
   build-depends:
       array
     , base
