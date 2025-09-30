@@ -1,11 +1,15 @@
 {
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
   };
   outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system:
     let
-      pkgs = nixpkgs.legacyPackages.${system};
-      hPkgs = pkgs.haskell.packages."ghc9102";
+      pkgs = import nixpkgs {
+        inherit system;
+      };
+
+      hPkgs = pkgs.haskell.packages."ghc984";
 
       devTools = with hPkgs; [
         ghc

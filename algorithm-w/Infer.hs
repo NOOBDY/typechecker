@@ -1,4 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Eta reduce" #-}
+{-# HLINT ignore "Avoid lambda" #-}
 
 module Infer where
 
@@ -8,7 +12,7 @@ import Errors (InferenceError (..), Result)
 import Control.Monad (foldM)
 import Control.Monad.State (StateT, evalStateT, get, lift, put)
 import qualified Data.ByteString.Lazy.Char8 as BS
-import Data.List (intercalate)
+import Data.List (foldl', intercalate)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Set (Set, (\\))
@@ -44,7 +48,7 @@ freshTyVar = do
     s <- get
     let counter' = counter s
     put s{counter = counter' + 1}
-    return $ "t" <> (BS.pack $ show counter')
+    return $ "t" <> BS.pack (show counter')
 
 applySubst :: Subst -> Type -> Type
 applySubst subst (TVar name) =
@@ -97,7 +101,7 @@ unify t1 t2 = unify' t1 t2
     --
     -- U-VarR is unify(τ,α)
     unifyVar v ty
-        | (TVar v) == ty = return (Map.empty, InferenceTree "Unify-Var-Same" input "{}" [])
+        | TVar v == ty = return (Map.empty, InferenceTree "Unify-Var-Same" input "{}" [])
         | occursCheck v ty = Left (OccursCheck v ty)
         | otherwise =
             let
@@ -158,7 +162,7 @@ inferVar env expr name = do
         Just scheme -> do
             instantiated <- instantiate scheme
             let output = show scheme
-            return (Map.empty, instantiated, (InferenceTree "T-Var" input output []))
+            return (Map.empty, instantiated, InferenceTree "T-Var" input output [])
         Nothing -> lift $ Left $ UnboundVariable name
 
 -- lambda abstraction
@@ -175,9 +179,9 @@ inferAbs env expr param body = do
     let newEnv = Map.insert param paramScheme env
     (s1, bodyType, tree1) <- infer newEnv body
     let paramTypeSubst = applySubst s1 paramType
-    let resultType = (TArrow paramTypeSubst bodyType)
+    let resultType = TArrow paramTypeSubst bodyType
     let output = show resultType
-    return (s1, resultType, (InferenceTree "T-Abs" input output [tree1]))
+    return (s1, resultType, InferenceTree "T-Abs" input output [tree1])
 
 -- function application
 --
@@ -195,7 +199,7 @@ inferApp env expr func arg = do
     (s2, argType, tree2) <- infer envSubst arg
 
     let funcTypeSubst = applySubst s2 funcType
-    let expectedFuncType = (TArrow argType resultType)
+    let expectedFuncType = TArrow argType resultType
 
     (s3, tree3) <- lift $ unify funcTypeSubst expectedFuncType
 
@@ -203,7 +207,7 @@ inferApp env expr func arg = do
     let finalType = applySubst s3 resultType
 
     let output = show finalType
-    return (finalSubst, finalType, (InferenceTree "T-App" input output [tree1, tree2, tree3]))
+    return (finalSubst, finalType, InferenceTree "T-App" input output [tree1, tree2, tree3])
 
 -- let polymorphism
 --
@@ -224,7 +228,7 @@ inferLet env expr var value body = do
 
     let finalSubst = s2 `composeSubst` s1
     let output = show bodyType
-    return (finalSubst, bodyType, (InferenceTree "T-Let" input output [tree1, tree2]))
+    return (finalSubst, bodyType, InferenceTree "T-Let" input output [tree1, tree2])
 
 --       Γ ⊢ e₁ : τ₁ ... eₙ : τₙ
 -- ----------------------------------- (T-Tuple)
@@ -246,17 +250,17 @@ inferTuple env expr exprs = do
 
     let resultType = TTuple types
     let output = show resultType
-    return (subst, resultType, (InferenceTree "T-Tuple" input output trees))
+    return (subst, resultType, InferenceTree "T-Tuple" input output trees)
 
 inferLitInt :: Env -> Expr -> StateT TypeInference Result (Subst, Type, InferenceTree)
 inferLitInt env expr =
     let input = prettyEnv env <> " ⊢ " <> show expr <> " ⇒"
-     in return (Map.empty, TInt, (InferenceTree "T-Int" input "Int" []))
+     in return (Map.empty, TInt, InferenceTree "T-Int" input "Int" [])
 
 inferLitBool :: Env -> Expr -> StateT TypeInference Result (Subst, Type, InferenceTree)
 inferLitBool env expr =
     let input = prettyEnv env <> " ⊢ " <> show expr <> " ⇒"
-     in return (Map.empty, TBool, (InferenceTree "T-Bool" input "Bool" []))
+     in return (Map.empty, TBool, InferenceTree "T-Bool" input "Bool" [])
 
 generalize :: Env -> Type -> Scheme
 generalize env ty =

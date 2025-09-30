@@ -6,6 +6,7 @@ cabal-version: 1.12
 
 name:           typechecker
 version:        0.0.0
+license-file:   LICENSE
 build-type:     Simple
 
 executable algorithm-w
