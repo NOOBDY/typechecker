@@ -81,17 +81,17 @@ applySubstEnv subst env =
     Map.map (\v -> applySubstScheme subst v) env
 
 unify :: Type -> Type -> Result (Subst, InferenceTree)
-unify t1 t2 = unify' t1 t2
+unify t1 t2 =
+    case (t1, t2) of
+        (TInt, TInt) -> unifyBase
+        (TBool, TBool) -> unifyBase
+        (TVar v, ty) -> unifyVar v ty
+        (ty, TVar v) -> unifyVar v ty
+        (TArrow a1 a2, TArrow b1 b2) -> unifyArrow (a1, a2) (b1, b2)
+        (TTuple ts1, TTuple ts2) -> unifyTuple ts1 ts2
+        (t1', t2') -> Left $ UnificationFailure t1' t2'
   where
     input = show t1 <> " ~ " <> show t2
-
-    unify' TInt TInt = unifyBase
-    unify' TBool TBool = unifyBase
-    unify' (TVar v) ty = unifyVar v ty
-    unify' ty (TVar v) = unifyVar v ty
-    unify' (TArrow a1 a2) (TArrow b1 b2) = unifyArrow (a1, a2) (b1, b2)
-    unify' (TTuple ts1) (TTuple ts2) = unifyTuple ts1 ts2
-    unify' t1' t2' = Left $ UnificationFailure t1' t2'
 
     unifyBase = return (Map.empty, InferenceTree "Unify-Base" input "{}" [])
 
@@ -114,10 +114,10 @@ unify t1 t2 = unify' t1 t2
     -- ----------------------------------------------- (U-Arrow)
     --       unify(τ₁ → τ₂ , τ₃ → τ₄) = S₂ ◯ S₁
     unifyArrow (a1, a2) (b1, b2) = do
-        (s1, tree1) <- unify' a1 b1
+        (s1, tree1) <- unify a1 b1
         let a2Subst = applySubst s1 a2
         let b2Subst = applySubst s1 b2
-        (s2, tree2) <- unify' a2Subst b2Subst
+        (s2, tree2) <- unify a2Subst b2Subst
         let finalSubst = s2 `composeSubst` s1
         let output = prettySubst finalSubst
         return (finalSubst, InferenceTree "Unify-Arrow" input output [tree1, tree2])
