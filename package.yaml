@@ -16,3 +16,20 @@ executables:
     build-tools:
       - alex
       - happy
+
+  system-f:
+    main: Main.hs
+    source-dirs: system-f
+    ghc-options:
+      - -Wall
+      - -Wextra
+      - -Werror
+    dependencies:
+      - array
+      - base
+      - bytestring
+      - containers
+      - mtl
+    build-tools:
+      - alex
+      - happy

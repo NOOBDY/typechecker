@@ -31,3 +31,27 @@ executable algorithm-w
     , containers
     , mtl
   default-language: Haskell2010
+
+executable system-f
+  main-is: Main.hs
+  other-modules:
+      Ast
+      Context
+      Errors
+      InferenceTree
+      Typecheck
+      Util
+      Paths_typechecker
+  hs-source-dirs:
+      system-f
+  ghc-options: -Wall -Wextra -Werror
+  build-tools:
+      alex
+    , happy
+  build-depends:
+      array
+    , base
+    , bytestring
+    , containers
+    , mtl
+  default-language: Haskell2010
